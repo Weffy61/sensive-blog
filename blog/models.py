@@ -10,6 +10,31 @@ class PostQuerySet(models.QuerySet):
         posts_at_year = self.filter(published_at__year=year).order_by('published_at')
         return posts_at_year
 
+    def popular(self):
+        popular_posts = Post.objects.annotate(likes_count=Count('likes')).order_by('-likes_count')
+        return popular_posts
+
+    def fetch_with_comments_count(self):
+        """
+        Метод делает несколько запросов к базе данных, чтобы получить количество
+        комментариев для каждого поста, и затем связывает эту информацию с объектами Post.
+        Также он не делает лишних запросов к БД и использует встроенные средства Python в
+        данном случае словарь для задания атрибутов. Данный метод рекомендуется
+        использовать при наличии 2 и более annotate в запросе, т.к это существенно
+        увеличивает скорость закрузки страницы.
+        """
+
+        most_popular_posts = self
+        most_popular_posts_ids = [post.id for post in most_popular_posts]
+        posts_with_comments = Post.objects.filter(id__in=most_popular_posts_ids).annotate(
+            comments_count=Count('comments'))
+        ids_and_comments = posts_with_comments.values_list('id', 'comments_count')
+        count_for_id = dict(ids_and_comments)
+
+        for post in most_popular_posts:
+            post.comments_count = count_for_id[post.id]
+        return list(most_popular_posts)
+
 
 class TagQuerySet(models.QuerySet):
 
