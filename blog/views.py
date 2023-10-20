@@ -42,14 +42,11 @@ def serialize_tag(tag):
     }
 
 
-def get_likes_count(post):
-    return post.num_likes
-
-
 def index(request):
-    most_popular_posts = Post.objects.popular()[:5].prefetch_related('author').fetch_with_comments_count()
+    most_popular_posts = Post.objects.popular()[:5].prefetch_related('tags').prefetch_related('author')\
+        .fetch_with_comments_count()
     fresh_posts = Post.objects.order_by('published_at').prefetch_related('author') \
-        .annotate(comments_count=Count('comments'))
+        .annotate(comments_count=Count('comments')).prefetch_related('tags')
     most_fresh_posts = list(fresh_posts)[-5:]
 
     most_popular_tags = Tag.objects.popular()[:5]
