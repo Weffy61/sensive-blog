@@ -60,7 +60,7 @@ def post_detail(request, slug):
             'author': comment.author.username,
         })
 
-    related_tags = post.tags.all().annotate(posts_count=Count('posts'))
+    related_tags = post.tags.annotate(posts_count=Count('posts'))
     serialized_post = {
         'title': post.title,
         'text': post.text,
