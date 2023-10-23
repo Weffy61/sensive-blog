@@ -50,7 +50,6 @@ def index(request):
 
 
 def post_detail(request, slug):
-    # post = Post.objects.all().annotate(likes_count=Count('likes')).prefetch_related('author').get(slug=slug)
     post = Post.objects.all().annotate(likes_count=Count('likes')).get(slug=slug)
     comments = Comment.objects.filter(post=post).prefetch_related('author').order_by('-author')
     serialized_comments = []
